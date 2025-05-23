@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Snowball Disaster</title>
+  <style>
+    /* Tüm elementlerin kutu modelini standart hale getirir, padding ve border boyutları element genişliğine dahil edilir */
+    * {
+      box-sizing: border-box;
+    }
+
+    /* HTML ve body için temel ayarlar: kenar boşlukları sıfırlanır, tam ekran kullanılır ve taşma engellenir */
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+      font-family: sans-serif;
+    }
+
+    /* Giriş ekranı stil ayarları */
+    #mainMenu {
+      /* Arka plan resmi tam ekran olacak şekilde ayarlanır */
+      background: url('giris_ekrani.png') no-repeat center center;
+      background-size: cover;
+      height: 100vh;
+      width: 100vw;
+      /* Menü butonlarını sağa hizalamak için flexbox kullanılır */
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+    }
+
+    /* Menü butonlarının düzeni için flexbox ile dikey sıralama */
+    .menu {
+      margin-right: 5vw;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    /* Genel buton stilleri: boyut, renk ve gölge efektleri */
+    .btn {
+      font-size: 18px;
+      padding: 12px 28px;
+      background-color: #ffcd63;
+      border: 2px solid #222;
+      box-shadow: 3px 3px 0 #914400;
+      cursor: pointer;
+      font-weight: bold;
+      min-width: 180px;
+      text-align: left;
+    }
+
+    /* Buton üzerine gelindiğinde arka plan rengi değişir */
+    .btn:hover {
+      background-color: #ffd980;
+    }
+
+    /* Yardım penceresi için stil ayarları */
+    #helpModal {
+      /* Tam ekran kaplayan, yarı saydam siyah arka plan */
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.7);
+      /* İçeriği ortalamak için flexbox kullanılır */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+
+    /* Yardım penceresi içeriğinin stil ayarları */
+    .modal-content {
+      background-color: #fff8e1;
+      padding: 30px 40px;
+      border-radius: 12px;
+      border: 2px solid #222;
+      box-shadow: 5px 5px 0 #914400;
+      max-width: 520px;
+      font-size: 15px;
+      color: #222;
+      position: relative;
+    }
+
+    /* Yardım penceresi başlıklarının üst kenar boşluğu sıfırlanır */
+    .modal-content h2, .modal-content h3 {
+      margin-top: 0;
+    }
+
+    /* Liste öğeleri için kare işaretçi kullanılır */
+    .modal-content ul {
+      padding-left: 20px;
+      list-style: square;
+    }
+
+    /* Öğe listesi için özel stil: işaretçi kaldırılarak flex düzeni kullanılır */
+    .item-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .item-list li {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    /* Öğe resimleri için sabit boyut ve çerçeve */
+    .item-img {
+      width: 40px;
+      height: 40px;
+      margin-right: 10px;
+      border: 1px solid #222;
+      background: #fff;
+      padding: 2px;
+    }
+
+    /* Yardım penceresini kapatma butonu */
+    .close-help {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 20px;
+      background-color: #ffcd63;
+      border: 2px solid #222;
+      box-shadow: 2px 2px 0 #914400;
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+
+    /* Oyun alanı (canvas) için stil ayarları */
+    canvas {
+      /* Canvas tam ekran olacak şekilde ayarlanır */
+      display: block;
+      width: 100vw;
+      height: 100vh;
+      background: url('arka_plan.png') no-repeat center center;
+      background-size: cover;
+      background-color: white;
+    }
+
+    /* Oyun içi bilgi ekranı (HUD) stil ayarları */
+    #hud {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 18px;
+      color: #222;
+      background: rgba(255,255,255,0.8);
+      padding: 8px 12px;
+      border-radius: 8px;
+      z-index: 2;
+    }
+
+    /* Geri sayım ve oyun sonu ekranı için stil ayarları */
+    #countdown, #gameOverScreen {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 64px;
+      font-weight: bold;
+      text-shadow: 3px 3px #222;
+      z-index: 3;
+      display: none;
+    }
+
+    /* Oyun sonu ekranı için ek font boyutu */
+    #gameOverScreen {
+      color: #000;
+      font-size: 72px;
+    }
+
+    /* Ayar penceresi stil ayarları */
+    #settingsModal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #fff;
+      padding: 25px 30px;
+      border: 2px solid #222;
+      box-shadow: 4px 4px 10px rgba(0,0,0,0.3);
+      z-index: 999;
+      border-radius: 10px;
+      min-width: 320px;
+    }
+
+    /* Ayar penceresi kapatma butonu */
+    .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 22px;
+      padding: 6px 12px;
+      background-color: #ffcd63;
+      border: 2px solid #222;
+      box-shadow: 2px 2px 0 #914400;
+      cursor: pointer;
+      font-weight: bold;
+      border-radius: 4px;
+    }
+
+    /* Kapatma butonu üzerine gelindiğinde renk değişimi */
+    .close-btn:hover {
+      background-color: #ffd980;
+    }
+
+    /* Oyun içi ayar butonu (☰) */
+    #settingsBtn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background-color: #ffcd63;
+      border: 2px solid #222;
+      box-shadow: 3px 3px 0 #914400;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 22px;
+      text-align: center;
+      line-height: 50px;
+      z-index: 1000;
+      display: none; /* Sadece oyun sırasında görünür */
+    }
+
+    /* Oyun içi menü penceresi */
+    #inGameMenu {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #fff8e1;
+      border: 2px solid #222;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 4px 4px 10px rgba(0,0,0,0.3);
+      z-index: 2000;
+    }
+
+    /* Oyun içi menü buton ve etiket stilleri */
+    .inGameModal button, .inGameModal label {
+      display: block;
+      margin: 10px 0;
+      font-weight: bold;
+      background-color: #ffcd63;
+      border: 2px solid #222;
+      padding: 8px 10px;
+      cursor: pointer;
+      box-shadow: 2px 2px 0 #914400;
+    }
+
+    /* Ses kaydırma çubuğu için tam genişlik */
+    .inGameModal input[type="range"] {
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <!-- Yardım penceresi: Oyun kurallarını ve öğe bilgilerini gösterir -->
+  <div id="helpModal">
+    <div class="modal-content">
+      <!-- Kapatma butonu -->
+      <span class="close-help">✖</span>
+      <h2>🎮 Nasıl Oynanır?</h2>
+      <ul>
+        <li><b>Kontroller:</b> ◄ Sol & ► Sağ ok tuşları ile kar topunu hareket ettir.</li>
+        <li><b>Oyuna başlamak:</b> Giriş ekranından "▶ PLAY" butonuna tıkla.</li>
+      </ul>
+      <h3>🧱 Öğe Bilgileri:</h3>
+      <ul class="item-list">
+        <li><img src="item_100.png" class="item-img"><b>Kar Topu (100):</b> +50 puan verir.</li>
+        <li><img src="item_150.png" class="item-img"><b>Ağaç (150):</b> +75 puan, -20 ceza.</li>
+        <li><img src="item_200.png" class="item-img"><b>Kütük (200):</b> +100 puan, -30 ceza.</li>
+        <li><img src="item_250.png" class="item-img"><b>Kaya (250):</b> +150 puan, -40 ceza.</li>
+        <li><img src="item_zarar.png" class="item-img"><b>Kırmızı Tehlike:</b> -20 puan.</li>
+        <li><img src="item_sure.png" class="item-img"><b>Süre Bonus:</b> +10 saniye.</li>
+      </ul>
+      <p><b>Not:</b> Skorun arttıkça kar topun büyür. 3000 puanla dev olur!</p>
+    </div>
+  </div>
+
+  <!-- Ana menü ekranı: Oyun başlangıç ekranı -->
+  <div id="mainMenu">
+    <div class="menu">
+      <!-- Oyun başlatma butonu -->
+      <button class="btn" onclick="startGame()">▶ PLAY</button>
+      <!-- Ayarları açma butonu -->
+      <button class="btn" onclick="openSettings()">⚙️ SETTINGS</button>
+      <!-- En yüksek skoru gösteren buton -->
+      <button class="btn" id="bestScoreBtn">🏆 BEST SCORE: <span id="bestScoreDisplay">0</span></button>
+      <!-- Oyundan çıkış butonu -->
+      <button class="btn" onclick="exitGame()">⏹ EXIT</button>
+    </div>
+  </div>
+
+  <!-- Oyun alanı: Oyunun ana canvas elementi -->
+  <canvas id="gameCanvas" style="display: none;"></canvas>
+
+  <!-- Oyun içi ayar butonu (☰): Oyun sırasında ayarları açar -->
+  <div id="settingsBtn" onclick="openSettings()">☰</div>
+
+  <!-- Oyun içi ayar menüsü: Ses ayarları ve ana menüye dönüş -->
+  <div id="inGameMenu">
+    <div class="inGameModal">
+      <!-- Ana menüye dönüş butonu -->
+      <button onclick="goToMainMenu()">🏠 Ana Menü</button>
+      <!-- Müzik sesi ayarı için kaydırma çubuğu -->
+      <label>🔊 Müzik Sesi</label>
+      <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="1">
+      <!-- Efekt sesi ayarı için kaydırma çubuğu -->
+      <label>🎵 Efekt Sesi</label>
+      <input type="range" id="effectSlider" min="0" max="1" step="0.01" value="1">
+      <!-- Oyundan çıkış butonu -->
+      <button onclick="exitGame()">⏹ Çıkış</button>
+      <!-- Menüyü kapatma butonu -->
+      <button onclick="toggleSettingsMenu()">❌</button>
+    </div>
+  </div>
+
+  <!-- Oyun içi bilgi ekranı (HUD): Süre ve skoru gösterir -->
+  <div id="hud" style="display:none">
+    ⏱ Süre: <span id="time">300</span> sn<br>
+    ⭐ Skor: <span id="score">0</span>
+  </div>
+
+  <!-- Geri sayım ekranı: Oyun başlamadan önce gösterilir -->
+  <div id="countdown" style="display:none">3</div>
+
+  <!-- Oyun sonu ekranı: Oyun bittiğinde gösterilir -->
+  <div id="gameOverScreen" style="display:none">GAME OVER</div>
+
+  <!-- Arka plan müziği için ses elementi -->
+  <audio id="backgroundMusic" src="sounds/arka_plan.mp3" autoplay loop></audio>
+  <!-- Efekt sesleri için ses elementi -->
+  <audio id="effectSound" src="sounds/efekt.mp3"></audio>
+
+  <!-- Ayar penceresi: Oyun dışı ses ayarları için -->
+  <div id="settingsModal">
+    <!-- Kapatma butonu -->
+    <button class="close-btn" onclick="closeSettings()">✖</button>
+    <!-- Müzik sesi ayarı için kaydırma çubuğu -->
+    <h3>🔊 Müzik Sesi</h3>
+    <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="1">
+    <!-- Efekt sesi ayarı için kaydırma çubuğu -->
+    <h3>🎵 Efekt Sesi</h3>
+    <input type="range" id="effectSlider" min="0" max="1" step="0.01" value="1">
+  </div>
+
+  <!-- JavaScript dosyası: Oyun mantığını içerir -->
+  <script src="oyun.js"></script>
+</body>
+</html>
