@@ -22,11 +22,12 @@ Ekrandan düşmeden ve dış sınırlara çarpmadan, olabildiğince çok eşya t
 
 ## 🖼️ OYUN GÖRSELLERİ
 
-![Ekran Görüntüsü 1](ss1.png)  
+![Ekran Görüntüsü 1](oyun%20projesi/ss1.png)  
 *İlk girişte görünüm*
 
-![Ekran Görüntüsü 2](ss2.png)  
+![Ekran Görüntüsü 2](oyun%20projesi/ss2.png)  
 *Ana menü görünümü*
 
-![Ekran Görüntüsü 3](ss3.png)  
+![Ekran Görüntüsü 3](oyun%20projesi/ss3.png)  
 *Oyun içi görünüm*
+
