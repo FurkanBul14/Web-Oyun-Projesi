@@ -31,3 +31,5 @@ Ekrandan düşmeden ve dış sınırlara çarpmadan, olabildiğince çok eşya t
 ![Ekran Görüntüsü 3](oyun%20projesi/ss3.png)  
 *Oyun içi görünüm*
 
+## Örnek Video 
+https://www.youtube.com/watch?v=Ak8ClKdAUkY
