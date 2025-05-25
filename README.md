@@ -33,3 +33,6 @@ Ekrandan düşmeden ve dış sınırlara çarpmadan, olabildiğince çok eşya t
 
 ## Örnek Video 
 https://www.youtube.com/watch?v=Ak8ClKdAUkY
+
+## Oyunu oynamak için
+https://furkanbul14.github.io/Web-Oyun-Projesi/oyun%20projesi/
